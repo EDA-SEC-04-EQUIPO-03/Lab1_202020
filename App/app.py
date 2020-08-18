@@ -30,6 +30,7 @@ import config as cf
 import sys
 import csv
 from time import process_time 
+import pytest
 
 def loadCSVFile (file, lst, sep=";"):
     """
@@ -100,12 +101,49 @@ def countElementsFilteredByColumn(criteria, column, lst):
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución ",t1_stop-t1_start," segundos")
     return counter
-
-def countElementsByCriteria(criteria, column, lst):
+def pasar_archivo_a_matriz(nombre_archivo:str)->list:
+    lista_retorno=[]
+    archivo=open(nombre_archivo,"r")
+    linea=archivo.readline()
+    lista_01=linea.replace("\n", "").split(",")
+    lista_retorno.append(lista_01)
+    linea=archivo.readline()
+    while len(linea)>0:
+        lista_agregar=linea.replace("\n", "").split(",")
+        lista_retorno.append(lista_agregar)
+        linea=archivo.readline()
+    archivo.close()
+    return lista_retorno
+def contar_ID(lista_retorno:list)->list:
+    listaID=[]
+    for colu in range(0,len(lista_retorno[0])):
+        if "director_name" in lista_retorno[0][colu]:
+            for cada_fila in range(1,len(lista_retorno)):
+                if lista_retorno[cada_fila][colu] != "None":
+                    listaID.append(lista_retorno[cada_fila][0])
+    return listaID
+def countElementsByCriteria(criteria, column, lst, nombre_archivo1:str,nombre_archivo2:str)->tuple:
     """
     Retorna la cantidad de elementos que cumplen con un criterio para una columna dada
     """
-    return 0
+    lista_retorno=pasar_archivo_a_matriz(nombre_archivo1)
+    listaID=contar_ID(lista_retorno)
+    contador=0
+    promedio=0
+    i=0
+    lista=pasar_archivo_a_matriz(nombre_archivo2)
+    for colu in range(0,len(lista[0])):
+        if "vote_average" in lista[0][colu]:
+            for fila in listaID:
+                if lista[i][0] == int(fila) and int(lista[i][colu])>=6:
+                    promedio+= lista[i][colu] 
+                elif lista[i][0] == int(fila):
+                    pos=listaID.index(fila)
+                    del listaID[pos]
+                else:
+                    i+=1
+    promedio_total=(promedio/len(listaID))
+    return (promedio_total,len(listaID)
 
 
 def main():
@@ -141,3 +179,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
